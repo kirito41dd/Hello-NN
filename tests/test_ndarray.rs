@@ -1,4 +1,4 @@
-use ndarray::{array, Array, Array1, Array2};
+use ndarray::{array, Array, Array2};
 
 #[test]
 fn test() {
