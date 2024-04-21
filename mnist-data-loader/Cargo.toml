@@ -1,15 +1,11 @@
 [package]
-name = "hello-nn"
+name = "mnist-data-loader"
 version = "0.1.0"
 edition = "2021"
-
-[workspace]
-members = [".", "mnist-data-loader"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ndarray = "0.15"
-ndarray-rand = "0.14"
-mnist-data-loader = { path = "./mnist-data-loader" }
+bytes = "1"
+image = "0.25"
 anyhow = "1"

@@ -28,7 +28,7 @@ impl Layer for SigmodLayer {
         // sigmod(x)的值
         let a = cache_forward[0].view();
 
-        // 激活函数层的输入和输出数量是相等的, 返回值长度和前一层神经元数量一致
+        // 当前每个神经元上的偏导，n个神经元，每个神经元只有一条出边
         let mut r = Mat::from_shape_fn((a.len(), 1), |(_, _)| 0.);
 
         // 对每个神经元求梯度
@@ -41,7 +41,9 @@ impl Layer for SigmodLayer {
             }
         }
 
-        // 激活函数层没有任何存储任何权重和偏置,无需update
+        // 对上一层来说，本层相当于只有一个节点，所以矩阵形状应该是 (1,n)
+        r = r.t().to_owned();
+
         (r, vec![])
     }
 
@@ -67,7 +69,7 @@ mod test {
         assert_eq!(a, array![[0.5], [0.5]]);
         let (g, b_cache) = s.backward(&array![[0.5, 0.5]].view(), &f_cache);
         println!("g:\n{}", g);
-        assert_eq!(g, array![[0.125], [0.125]]);
+        assert_eq!(g, array![[0.125, 0.125]]);
         s.update(0.1, &b_cache);
     }
 }

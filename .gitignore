@@ -1,2 +1,5 @@
 /target
 Cargo.lock
+/data/*.gz
+/data/*ubyte
+/data/*.png

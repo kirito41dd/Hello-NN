@@ -1,4 +1,6 @@
 use crate::{Layer, LayerCache, Mat, MatView};
+use ndarray_rand::rand_distr::Uniform;
+use ndarray_rand::RandomExt;
 
 // 没有激活函数的全连接层
 pub struct DenseLayerNoActive {
@@ -6,6 +8,14 @@ pub struct DenseLayerNoActive {
     pub w: Mat,
     // 每个神经元的偏置, n行1列
     pub b: Mat,
+}
+
+impl DenseLayerNoActive {
+    pub fn new(pre_cnt: usize, cell_cnt: usize) -> Self {
+        let w = Mat::random((cell_cnt, pre_cnt), Uniform::new(0., 1.));
+        let b = Mat::random((cell_cnt, 1), Uniform::new(0., 1.));
+        Self { w, b }
+    }
 }
 
 impl Layer for DenseLayerNoActive {
@@ -30,7 +40,7 @@ impl Layer for DenseLayerNoActive {
         let mut w_grads = Mat::zeros(self.w.raw_dim());
 
         // 对每个神经元求所有w和b的偏导, 每个w的导数都是与其相乘的a, w不需要参与, 对b的偏导是1
-        for (i, _) in self.w.columns().into_iter().enumerate() {
+        for (i, _) in self.w.rows().into_iter().enumerate() {
             // 累加当前神经元每条出边上的偏导, grads的每行,都是前一层某个神经元和本层连线的偏导
             for g in grads.rows().into_iter() {
                 // b在这里求 链式法则相乘
@@ -64,13 +74,10 @@ impl Layer for DenseLayerNoActive {
 
 #[cfg(test)]
 mod test {
-    
 
     use ndarray::array;
 
-    use crate::{
-        layer_impls::{DenseLayerNoActive}, Layer,
-    };
+    use crate::{layer_impls::DenseLayerNoActive, Layer};
 
     #[test]
     fn test() {
