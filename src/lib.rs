@@ -1,9 +1,9 @@
 pub mod layer_impls;
 pub mod util;
 
-use std::io::Read;
 
-use ndarray::{array, Array2, ArrayView2, ArrayViewMut2};
+
+use ndarray::{Array2, ArrayView2, ArrayViewMut2};
 
 use crate::util::calc_all_grads_avg;
 
@@ -38,7 +38,7 @@ impl NeuralNetworkModel {
             let data = datas[i].view();
             let label = labels[i].view();
             let mut pre = data.to_owned();
-            for (j, layer) in self.layers.iter_mut().enumerate() {
+            for (_j, layer) in self.layers.iter_mut().enumerate() {
                 let (a, f_cache) = layer.forward(&pre.view(), true);
                 forward_cache[i].push(f_cache);
                 pre = a;

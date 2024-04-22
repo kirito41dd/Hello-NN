@@ -1,3 +1,6 @@
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+
 use crate::{
     layer_impls::{DenseLayerNoActive, SigmodLayer},
     LayerCache, Mat, NeuralNetworkModel,
@@ -45,13 +48,26 @@ pub fn calc_all_grads_avg(all_grades: &Vec<Vec<LayerCache>>) -> Vec<LayerCache> 
     base
 }
 
+pub fn shuffle<A, B>(a: Vec<A>, b: Vec<B>) -> (Vec<A>, Vec<B>) {
+    let mut ab = a.into_iter().zip(b.into_iter()).collect::<Vec<(A, B)>>();
+    let mut rng = thread_rng();
+    let _shuffle = ab.shuffle(&mut rng);
+    let mut ra = Vec::with_capacity(ab.len());
+    let mut rb = Vec::with_capacity(ab.len());
+    for (a, b) in ab {
+        ra.push(a);
+        rb.push(b)
+    }
+    (ra, rb)
+}
+
 #[cfg(test)]
 mod test {
     use ndarray::array;
 
-    use crate::{LayerCache, Mat};
+    use crate::{LayerCache};
 
-    use super::calc_all_grads_avg;
+    use super::{calc_all_grads_avg, shuffle};
 
     #[test]
     fn test_calc_all_grads_avg() {
@@ -65,17 +81,30 @@ mod test {
         let all = vec![item1, item2];
 
         let result = calc_all_grads_avg(&all);
-        for layer_cahce in result.iter() {
-            println!("layer_ca:\n");
-            for g in layer_cahce.iter() {
-                println!("g:\n{}", g);
-            }
-        }
 
         let c1: LayerCache = vec![array![[5.5, 11.,]], array![[550., 550.,]]];
         let c2: LayerCache = vec![array![[55., 110.]], array![[0., 0.,]]];
         let item3: Vec<LayerCache> = vec![c1, c2];
 
         assert_eq!(result, item3);
+
+        let c1: LayerCache = vec![array![[1., 2.,]], array![[100., 100.,]]];
+        let c2: LayerCache = vec![array![[10., 20.,]], array![[0., 0.,]]];
+        let item4: Vec<LayerCache> = vec![c1, c2];
+        let all = vec![
+            item4.clone(),
+            item4.clone(),
+            item4.clone(),
+            item4.clone(),
+            item4,
+        ];
+        let result = calc_all_grads_avg(&all);
+        assert_eq!(all[0], result);
+    }
+
+    #[test]
+    fn test_shuffle() {
+        let (a, b) = shuffle(vec![1, 2, 3, 4, 5, 6, 7], vec![1, 2, 3, 4, 5, 6, 7]);
+        assert_eq!(a, b);
     }
 }

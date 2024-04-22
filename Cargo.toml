@@ -13,3 +13,4 @@ ndarray = "0.15"
 ndarray-rand = "0.14"
 mnist-data-loader = { path = "./mnist-data-loader" }
 anyhow = "1"
+rand = "0.8"

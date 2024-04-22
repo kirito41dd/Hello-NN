@@ -12,8 +12,8 @@ pub struct DenseLayerNoActive {
 
 impl DenseLayerNoActive {
     pub fn new(pre_cnt: usize, cell_cnt: usize) -> Self {
-        let w = Mat::random((cell_cnt, pre_cnt), Uniform::new(0., 1.));
-        let b = Mat::random((cell_cnt, 1), Uniform::new(0., 1.));
+        let w = Mat::random((cell_cnt, pre_cnt), Uniform::new(-1., 1.));
+        let b = Mat::random((cell_cnt, 1), Uniform::new(-1., 1.));
         Self { w, b }
     }
 }

@@ -1,19 +1,23 @@
-use std::process::id;
 
-use anyhow::{anyhow, bail};
+
+
+use hello_nn::util::shuffle;
 use hello_nn::{Mat, MatView, NeuralNetworkModel};
 use mnist_data_loader::{parse_imgs_from_reader, parse_labels_from_reader};
 
-const BATCH_SIZE: usize = 10;
+
+
+const BATCH_SIZE: usize = 16;
 const INPUT_SIZE: usize = 784;
 
 fn main() {
     let mut model = NeuralNetworkModel::new();
-    model.push_dense_layer(INPUT_SIZE, 16);
-    model.push_dense_layer(16, 16);
-    model.push_dense_layer(16, 10);
+    model.push_dense_layer(INPUT_SIZE, 128);
+    model.push_dense_layer(128, 128);
+    model.push_dense_layer(128, 10);
 
-    let (data, labels) = load_train_data().unwrap();
+    let (mut data, mut labels) = load_train_data().unwrap();
+    let (test_data, test_labels) = load_test_data().unwrap();
     let mut epoch = 0;
     let mut cnt = 20;
     let mut loss = 999.;
@@ -22,7 +26,7 @@ fn main() {
         let mut label_it = labels.chunks(BATCH_SIZE);
         while let Some(data) = data_it.next() {
             let label = label_it.next().unwrap();
-            loss = model.fit(data, label, 1.);
+            loss = model.fit(data, label, 0.1);
 
             // if cnt == 0 {
             //     break;
@@ -30,12 +34,18 @@ fn main() {
             // cnt -= 1;
         }
         epoch += 1;
-        cnt -= 1;
+        //cnt -= 1;
         println!("epoch: {}, loss: {}", epoch, loss);
-        if loss < 0.5 {
+
+        if loss < 0.2 {
             break;
         }
+        if epoch % 20 == 0 {
+            print_rate(&mut model, &test_data, &test_labels);
+            (data, labels) = shuffle(data, labels);
+        }
         if cnt == 0 {
+            print_rate(&mut model, &test_data, &test_labels);
             let mut s = String::new();
             std::io::stdin().read_line(&mut s);
             if s.contains("goon") {
@@ -45,12 +55,14 @@ fn main() {
             break;
         }
     }
+    print_rate(&mut model, &test_data, &test_labels);
+}
 
+pub fn print_rate(model: &mut NeuralNetworkModel, datas: &Vec<Mat>, labels: &Vec<u8>) {
     let mut accept = 0;
     let mut wrong = 0;
 
-    let (data, labels) = load_test_data().unwrap();
-    for (i, data) in data.iter().enumerate() {
+    for (i, data) in datas.iter().enumerate() {
         let r = model.predict(&data.view());
 
         let got = judge(&r.view());
@@ -60,7 +72,7 @@ fn main() {
             accept += 1;
         } else {
             wrong += 1;
-            println!("want: {} got: {}", want, got);
+            println!("want: {} got: {}, sum:{}", want, got, r.sum());
         }
     }
     let rate = accept as f32 / (accept + wrong) as f32 * 100.;
