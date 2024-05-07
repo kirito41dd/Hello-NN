@@ -1,8 +1,6 @@
 pub mod layer_impls;
 pub mod util;
 
-
-
 use ndarray::{Array2, ArrayView2, ArrayViewMut2};
 
 use crate::util::calc_all_grads_avg;
@@ -63,6 +61,9 @@ impl NeuralNetworkModel {
             let mut grads = ((a - b) * 2.) / batch_size as f32;
             grads = grads.t().to_owned(); // [[1],[2],[3]] -> [[1,2,3]]
 
+            // 交叉熵梯度直接传label值
+            grads = b.to_owned();
+
             // println!("a    : {}", a.t());
             // println!("b    : {}", b.t());
             // println!("grads: {}", grads);
@@ -75,7 +76,7 @@ impl NeuralNetworkModel {
                 // println!("g:\n{}", grads);
                 // println!(
                 //     "now layer {}, caceh forward:\n{:?}",
-                //     j, &self.forward_cache[i][j]
+                //     j, &forward_cache[i][j]
                 // );
                 // 从后往前
                 let layer = &mut self.layers[j];

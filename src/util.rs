@@ -2,14 +2,22 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 
 use crate::{
-    layer_impls::{DenseLayerNoActive, SigmodLayer},
+    layer_impls::{DenseLayerNoActive, ReLULayer, SigmodLayer, SoftmaxLayer},
     LayerCache, Mat, NeuralNetworkModel,
 };
 
 impl NeuralNetworkModel {
-    pub fn push_dense_layer(&mut self, pre_cnt: usize, cell_cnt: usize) {
+    pub fn push_dense_sigmod_layer(&mut self, pre_cnt: usize, cell_cnt: usize) {
         self.push_layer(DenseLayerNoActive::new(pre_cnt, cell_cnt));
         self.push_layer(SigmodLayer::new());
+    }
+    pub fn push_dense_softmax_layer(&mut self, pre_cnt: usize, cell_cnt: usize) {
+        self.push_layer(DenseLayerNoActive::new(pre_cnt, cell_cnt));
+        self.push_layer(SoftmaxLayer::new());
+    }
+    pub fn push_dense_relu_layer(&mut self, pre_cnt: usize, cell_cnt: usize) {
+        self.push_layer(DenseLayerNoActive::new(pre_cnt, cell_cnt));
+        self.push_layer(ReLULayer::new());
     }
 }
 
@@ -65,7 +73,7 @@ pub fn shuffle<A, B>(a: Vec<A>, b: Vec<B>) -> (Vec<A>, Vec<B>) {
 mod test {
     use ndarray::array;
 
-    use crate::{LayerCache};
+    use crate::LayerCache;
 
     use super::{calc_all_grads_avg, shuffle};
 

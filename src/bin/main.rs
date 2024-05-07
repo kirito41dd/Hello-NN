@@ -1,25 +1,20 @@
-
-
-
 use hello_nn::util::shuffle;
 use hello_nn::{Mat, MatView, NeuralNetworkModel};
 use mnist_data_loader::{parse_imgs_from_reader, parse_labels_from_reader};
-
-
 
 const BATCH_SIZE: usize = 16;
 const INPUT_SIZE: usize = 784;
 
 fn main() {
     let mut model = NeuralNetworkModel::new();
-    model.push_dense_layer(INPUT_SIZE, 128);
-    model.push_dense_layer(128, 128);
-    model.push_dense_layer(128, 10);
+    model.push_dense_sigmod_layer(INPUT_SIZE, 300);
+    //model.push_dense_sigmod_layer(200, 128);
+    model.push_dense_softmax_layer(300, 10);
 
     let (mut data, mut labels) = load_train_data().unwrap();
     let (test_data, test_labels) = load_test_data().unwrap();
     let mut epoch = 0;
-    let mut cnt = 20;
+    let _cnt = 20;
     let mut loss = 999.;
     loop {
         let mut data_it = data.chunks(BATCH_SIZE);
@@ -27,38 +22,16 @@ fn main() {
         while let Some(data) = data_it.next() {
             let label = label_it.next().unwrap();
             loss = model.fit(data, label, 0.1);
-
-            // if cnt == 0 {
-            //     break;
-            // }
-            // cnt -= 1;
         }
         epoch += 1;
         //cnt -= 1;
         println!("epoch: {}, loss: {}", epoch, loss);
-
-        if loss < 0.2 {
-            break;
-        }
-        if epoch % 20 == 0 {
-            print_rate(&mut model, &test_data, &test_labels);
-            (data, labels) = shuffle(data, labels);
-        }
-        if cnt == 0 {
-            print_rate(&mut model, &test_data, &test_labels);
-            let mut s = String::new();
-            std::io::stdin().read_line(&mut s);
-            if s.contains("goon") {
-                cnt += 20;
-                continue;
-            }
-            break;
-        }
+        print_rate(&mut model, &test_data, &test_labels);
+        (data, labels) = shuffle(data, labels);
     }
-    print_rate(&mut model, &test_data, &test_labels);
 }
 
-pub fn print_rate(model: &mut NeuralNetworkModel, datas: &Vec<Mat>, labels: &Vec<u8>) {
+pub fn print_rate(model: &mut NeuralNetworkModel, datas: &[Mat], labels: &[u8]) {
     let mut accept = 0;
     let mut wrong = 0;
 
@@ -67,7 +40,7 @@ pub fn print_rate(model: &mut NeuralNetworkModel, datas: &Vec<Mat>, labels: &Vec
 
         let got = judge(&r.view());
         let want = labels[i];
-        println!("r: {}: {}", want, r.t());
+        //println!("r: {}: {}", want, r.t());
         if got == want {
             accept += 1;
         } else {

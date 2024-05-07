@@ -50,11 +50,6 @@ pub fn to_img_buf(img: &[u8], rows: u32, cols: u32) -> ImageBuffer<Luma<u8>, Vec
 #[cfg(test)]
 mod tests {
 
-    use std::io::Read;
-
-    use bytes::Buf;
-    use image::{imageops::flip_vertical_in_place, ImageBuffer};
-
     use super::*;
 
     #[test]
