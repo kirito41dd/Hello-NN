@@ -1,6 +1,7 @@
 use crate::{Layer, LayerCache, Mat, MatView};
-use ndarray_rand::rand_distr::Uniform;
+
 use ndarray_rand::RandomExt;
+use rand::distributions::Distribution;
 
 // 没有激活函数的全连接层
 pub struct DenseLayerNoActive {
@@ -11,9 +12,16 @@ pub struct DenseLayerNoActive {
 }
 
 impl DenseLayerNoActive {
+    // 参数初始化为全0
     pub fn new(pre_cnt: usize, cell_cnt: usize) -> Self {
-        let w = Mat::random((cell_cnt, pre_cnt), Uniform::new(-1., 1.));
-        let b = Mat::random((cell_cnt, 1), Uniform::new(-1., 1.));
+        let w = Mat::zeros((cell_cnt, pre_cnt));
+        let b = Mat::zeros((cell_cnt, 1));
+        Self { w, b }
+    }
+    // 随机初始化参数
+    pub fn new_with(pre_cnt: usize, cell_cnt: usize, dist: impl Distribution<f32> + Clone) -> Self {
+        let w = Mat::random((cell_cnt, pre_cnt), dist.clone());
+        let b = Mat::zeros((cell_cnt, 1));
         Self { w, b }
     }
 }

@@ -1,5 +1,9 @@
-use rand::seq::SliceRandom;
+
+
+use ndarray_rand::rand_distr::Normal;
+
 use rand::thread_rng;
+use rand::{distributions::Distribution, seq::SliceRandom};
 
 use crate::{
     layer_impls::{DenseLayerNoActive, ReLULayer, SigmodLayer, SoftmaxLayer},
@@ -8,15 +12,27 @@ use crate::{
 
 impl NeuralNetworkModel {
     pub fn push_dense_sigmod_layer(&mut self, pre_cnt: usize, cell_cnt: usize) {
-        self.push_layer(DenseLayerNoActive::new(pre_cnt, cell_cnt));
+        self.push_layer(DenseLayerNoActive::new_with(
+            pre_cnt,
+            cell_cnt,
+            DistCustomWrap::new(Normal::new(0., 1.).unwrap(), |v| v * 0.01),
+        ));
         self.push_layer(SigmodLayer::new());
     }
     pub fn push_dense_softmax_layer(&mut self, pre_cnt: usize, cell_cnt: usize) {
-        self.push_layer(DenseLayerNoActive::new(pre_cnt, cell_cnt));
+        self.push_layer(DenseLayerNoActive::new_with(
+            pre_cnt,
+            cell_cnt,
+            DistCustomWrap::new(Normal::new(0., 1.).unwrap(), |v| v * 0.01),
+        ));
         self.push_layer(SoftmaxLayer::new());
     }
     pub fn push_dense_relu_layer(&mut self, pre_cnt: usize, cell_cnt: usize) {
-        self.push_layer(DenseLayerNoActive::new(pre_cnt, cell_cnt));
+        self.push_layer(DenseLayerNoActive::new_with(
+            pre_cnt,
+            cell_cnt,
+            DistCustomWrap::new(Normal::new(0., 1.).unwrap(), |v| v * 0.01),
+        ));
         self.push_layer(ReLULayer::new());
     }
 }
@@ -67,6 +83,38 @@ pub fn shuffle<A, B>(a: Vec<A>, b: Vec<B>) -> (Vec<A>, Vec<B>) {
         rb.push(b)
     }
     (ra, rb)
+}
+
+pub fn pause() {
+    let mut s = String::new();
+    _ = std::io::stdin().read_line(&mut s);
+}
+
+// 处理初始化的随机数，可以对random的随机值进行转换
+#[derive(Clone)]
+pub struct DistCustomWrap<I, F> {
+    inner: I,
+    f: F,
+}
+
+impl<I, F> DistCustomWrap<I, F>
+where
+    I: Distribution<f32>,
+    F: Fn(f32) -> f32,
+{
+    pub fn new(inner: I, f: F) -> Self {
+        DistCustomWrap { inner, f }
+    }
+}
+
+impl<I, F> Distribution<f32> for DistCustomWrap<I, F>
+where
+    I: Distribution<f32>,
+    F: Fn(f32) -> f32,
+{
+    fn sample<R: rand::prelude::Rng + ?Sized>(&self, rng: &mut R) -> f32 {
+        (self.f)(self.inner.sample(rng))
+    }
 }
 
 #[cfg(test)]

@@ -1,15 +1,20 @@
-use hello_nn::util::shuffle;
+
+use hello_nn::loss_impls::{CrossEntropy};
+use hello_nn::util::{shuffle};
 use hello_nn::{Mat, MatView, NeuralNetworkModel};
 use mnist_data_loader::{parse_imgs_from_reader, parse_labels_from_reader};
+
 
 const BATCH_SIZE: usize = 16;
 const INPUT_SIZE: usize = 784;
 
 fn main() {
     let mut model = NeuralNetworkModel::new();
-    model.push_dense_sigmod_layer(INPUT_SIZE, 300);
-    //model.push_dense_sigmod_layer(200, 128);
-    model.push_dense_softmax_layer(300, 10);
+    model.push_dense_relu_layer(INPUT_SIZE, 256);
+    //model.push_dense_sigmod_layer(16, 16);
+    model.push_dense_softmax_layer(256, 10);
+    model.minimize(CrossEntropy::new());
+    //model.minimize(MSE::new());
 
     let (mut data, mut labels) = load_train_data().unwrap();
     let (test_data, test_labels) = load_test_data().unwrap();
@@ -45,7 +50,7 @@ pub fn print_rate(model: &mut NeuralNetworkModel, datas: &[Mat], labels: &[u8]) 
             accept += 1;
         } else {
             wrong += 1;
-            println!("want: {} got: {}, sum:{}", want, got, r.sum());
+            // println!("want: {} got: {}, sum:{}", want, got, r.sum());
         }
     }
     let rate = accept as f32 / (accept + wrong) as f32 * 100.;

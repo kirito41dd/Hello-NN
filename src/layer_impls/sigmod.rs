@@ -28,6 +28,8 @@ impl Layer for SigmodLayer {
         // sigmod(x)的值
         let a = cache_forward[0].view();
 
+        println!("SIGMOD A:{}", a);
+
         // 当前每个神经元上的偏导，n个神经元，每个神经元只有一条出边
         let mut r = Mat::from_shape_fn((a.len(), 1), |(_, _)| 0.);
 
